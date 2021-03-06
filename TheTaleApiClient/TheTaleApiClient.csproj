@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Flurl.Http" Version="3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataBaseContext\DataBaseContext.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\Requests\" />
+  </ItemGroup>
+
+</Project>

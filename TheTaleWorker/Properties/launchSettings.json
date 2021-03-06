@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "TheTaleWorker": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

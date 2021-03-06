@@ -1,0 +1,2 @@
+﻿// Add migration
+dotnet ef migrations add initialcreate -s ..\TheTaleWorker\TheTaleWorker.csproj
