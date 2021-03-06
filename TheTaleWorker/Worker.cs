@@ -44,8 +44,7 @@ namespace TheTaleWorker
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            //_dbContext.Database.EnsureDeleted();
-            //_dbContext.Database.EnsureCreated();
+            _dbContext.Database.EnsureCreated();
             _dbContext.Database.Migrate();
 
             while (!stoppingToken.IsCancellationRequested)
@@ -55,7 +54,7 @@ namespace TheTaleWorker
                 await RunWorkerAsync();
 
                 _logger.LogInformation("Sleeping...");
-                await Task.Delay(6000, stoppingToken);
+                await Task.Delay(20000, stoppingToken);
             }
         }
 
@@ -65,29 +64,70 @@ namespace TheTaleWorker
 
             var apiClient = new ApiClient();
 
+            int turnNumber = 0;
             _logger.LogInformation("Login into the game");
 
+            EfCoreDao.SaveLogEventAsync(
+                new LogEventDto()
+                {
+                    Type = "Game",
+                    Description = "Trying to login into game"
+                });
             var cookieWithCredentials = await apiClient.LoginAsync(_login, _password);
             if (cookieWithCredentials != null)
             {
+                EfCoreDao.SaveLogEventAsync(
+                    new LogEventDto()
+                    {
+                        Type = "Game",
+                        Description = "Login success."
+                    });
+
                 var cards = await apiClient.GetCardsAsync(cookieWithCredentials);
 
                 var gameInfo = await apiClient.GetGameInfoAsync(cookieWithCredentials);
                 if (gameInfo != null)
                 {
                     var turnDto = MapApiResponseIntoDto.MapGameInfoIntoTurnDto(gameInfo);
+                    turnNumber = turnDto.Number;
+                    var heroInfoDto = MapApiResponseIntoDto.MapGameInfoIntoHeroInfoDto(gameInfo);
+
+                    var actionPercentsLogInfo = heroInfoDto.ActionPercents > 0 ? $"{heroInfoDto.ActionPercents:N0}%" : string.Empty;
+                    EfCoreDao.SaveLogEventAsync(
+                        new LogEventDto()
+                        {
+                            Type = "Game",
+                            TurnNumber = turnNumber,
+                            Description = $"Got game info: {heroInfoDto.ActionDescription} {actionPercentsLogInfo}."
+                        }); ;
+
                     EfCoreDao.SaveTurnAsync(turnDto);
 
-                    var heroInfoDto = MapApiResponseIntoDto.MapGameInfoIntoHeroInfoDto(gameInfo);
                     EfCoreDao.SaveHeroInfoAsync(heroInfoDto);
 
                     var heroState = GetHeroState(heroInfoDto);
+
+                    EfCoreDao.SaveLogEventAsync(
+                        new LogEventDto()
+                        {
+                            Type = "Game",
+                            TurnNumber = turnNumber,
+                            Description = $"Hero state: {heroState}."
+                        });
 
                     if (heroState == HeroStates.Idle)
                     {
                         var newWay = cards?.data?.cards?.FirstOrDefault(x => x.name == CardNames.NewWay);
                         if (newWay != null)
                         {
+                            EfCoreDao.SaveLogEventAsync(
+                                new LogEventDto()
+                                {
+                                    Type = "Game",
+                                    TurnNumber = turnNumber,
+                                    Description = $"Try to use card: {CardNames.NewWay} with uid={newWay.uid}."
+                                });
+
                             var result = await apiClient.UseCardsAsync(cookieWithCredentials, newWay);
                             if (result)
                             {
@@ -99,27 +139,57 @@ namespace TheTaleWorker
 
                     if (heroState == HeroStates.LowHealthInFightWithMob)
                     {
-                        var regenerationCard = cards?.data?.cards?.FirstOrDefault(x => x.name == CardNames.Regeneration);
-                        var result = await apiClient.UseCardsAsync(cookieWithCredentials, regenerationCard);
-                        if (result)
+                        var handOfDeathCard = cards?.data?.cards?.FirstOrDefault(x => x.name == CardNames.HandOfDeath);
+                        if (handOfDeathCard != null)
                         {
-                            await Task.Delay(DelayAfterCardUsingInMilliSeconds);
-                            return true;
+                            EfCoreDao.SaveLogEventAsync(
+                                new LogEventDto()
+                                {
+                                    Type = "Game",
+                                    TurnNumber = turnNumber,
+                                    Description = $"Try to use card: {CardNames.HandOfDeath} with uid={handOfDeathCard.uid}."
+                                });
+
+                            var result = await apiClient.UseCardsAsync(cookieWithCredentials, handOfDeathCard);
+                            if (result)
+                            {
+                                await Task.Delay(DelayAfterCardUsingInMilliSeconds);
+                                return true;
+                            }
                         }
                     }
 
                     if (heroState == HeroStates.LowHealth)
                     {
                         var regenerationCard = cards?.data?.cards?.FirstOrDefault(x => x.name == CardNames.Regeneration);
-                        var result = await apiClient.UseCardsAsync(cookieWithCredentials, regenerationCard);
-                        if (result)
+                        if (regenerationCard != null)
                         {
-                            await Task.Delay(DelayAfterCardUsingInMilliSeconds);
-                            return true;
+                            var result = await apiClient.UseCardsAsync(cookieWithCredentials, regenerationCard);
+                            if (result)
+                            {
+                                EfCoreDao.SaveLogEventAsync(
+                                    new LogEventDto()
+                                    {
+                                        Type = "Game",
+                                        TurnNumber = turnNumber,
+                                        Description = $"Try to use card: {CardNames.HandOfDeath} with uid={regenerationCard.uid}."
+                                    });
+
+                                await Task.Delay(DelayAfterCardUsingInMilliSeconds);
+                                return true;
+                            }
                         }
                     }
                 }
             }
+
+            EfCoreDao.SaveLogEventAsync(
+                new LogEventDto()
+                {
+                    Type = "Game",
+                    TurnNumber = turnNumber,
+                    Description = "Task complete."
+                });
 
             return true;
         }

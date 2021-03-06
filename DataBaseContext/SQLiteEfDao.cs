@@ -105,6 +105,7 @@ namespace DataBaseContext
             {
                 Date = DateTime.Now,
                 Type = logEvent.Type,
+                TurnNumber = logEvent.TurnNumber,
                 Description = logEvent.Description
             };
 

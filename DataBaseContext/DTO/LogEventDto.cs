@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataBaseContext.DTO
 {
@@ -9,6 +7,8 @@ namespace DataBaseContext.DTO
         public int Id { get; set; }
 
         public DateTime Date { get; set; }
+
+        public int TurnNumber { get; set; }
 
         public string Type { get; set; }
 
