@@ -3,18 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using NLog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace TheTaleWorker
 {
     public class Program
     {
-        private static readonly ILogger<Program> _logger = LoggerFactory.Create(builder => { builder.AddConsole(); }).CreateLogger<Program>();
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public static void Main(string[] args)
         {
@@ -22,6 +18,7 @@ namespace TheTaleWorker
 
             var builder = host.Build();
 
+            _logger.Info($"Run worker");
             builder.Run();
         }
 
@@ -40,12 +37,14 @@ namespace TheTaleWorker
                     WorkerConfiguration workerConfiguration = configuration.GetSection(nameof(WorkerConfiguration)).Get<WorkerConfiguration>();
                     if (workerConfiguration == null)
                     {
-                        _logger.LogError($"{nameof(WorkerConfiguration)} is NULL! Set up secrets, for more info see AddSecrets.txt");
+                        _logger.Error($"{nameof(WorkerConfiguration)} is NULL! Set up secrets, for more info see AddSecrets.txt");
                         throw new NullReferenceException($"{nameof(WorkerConfiguration)} is NULL!");
                     }
 
                     services.AddSingleton(workerConfiguration);
                     services.AddDbContext<SqliteContext>(options => options.UseSqlite(workerConfiguration.ConnectionString), ServiceLifetime.Transient, ServiceLifetime.Transient);
+
+                    _logger.Info($"ConfigureServices complete");
                 });
     }
 }

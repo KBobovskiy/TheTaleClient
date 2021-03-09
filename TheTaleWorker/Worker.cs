@@ -3,6 +3,7 @@ using DataBaseContext.DTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog;
 using Resources.Enums;
 using Resources.StringResources;
 using System;
@@ -19,6 +20,7 @@ namespace TheTaleWorker
 {
     public class Worker : BackgroundService
     {
+        private readonly Logger _nlog = LogManager.GetCurrentClassLogger();
         private readonly ILogger<Worker> _logger;
         private string _login;
         private string _password;
@@ -44,16 +46,26 @@ namespace TheTaleWorker
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _dbContext.Database.EnsureCreated();
-            _dbContext.Database.Migrate();
+            //_dbContext.Database.EnsureCreated();
+            //_dbContext.Database.Migrate();
 
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Working...");
+                _nlog.Info("Working...");
 
-                await RunWorkerAsync();
+                try
+                {
+                    await RunWorkerAsync();
+                }
+                catch (Exception ex)
+                {
+                    _nlog.Error(ex, "Error: on call RunWorkerAsync");
+                    throw;
+                }
 
                 _logger.LogInformation("Sleeping...");
+                _nlog.Info("Sleeping...");
                 await Task.Delay(20000, stoppingToken);
             }
         }
@@ -67,6 +79,7 @@ namespace TheTaleWorker
             int turnNumber = 0;
             _logger.LogInformation("Login into the game");
 
+            _nlog.Info(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + " Trying to login into game");
             EfCoreDao.SaveLogEventAsync(
                 new LogEventDto()
                 {
@@ -82,6 +95,7 @@ namespace TheTaleWorker
                         Type = "Game",
                         Description = "Login success."
                     });
+                _nlog.Info(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + " Login success.");
 
                 var cards = await apiClient.GetCardsAsync(cookieWithCredentials);
 
@@ -99,7 +113,8 @@ namespace TheTaleWorker
                             Type = "Game",
                             TurnNumber = turnNumber,
                             Description = $"Got game info: {heroInfoDto.ActionDescription} {actionPercentsLogInfo}."
-                        }); ;
+                        });
+                    _nlog.Info(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Got game info: {heroInfoDto.ActionDescription} {actionPercentsLogInfo}.");
 
                     EfCoreDao.SaveTurnAsync(turnDto);
 
@@ -114,6 +129,7 @@ namespace TheTaleWorker
                             TurnNumber = turnNumber,
                             Description = $"Hero state: {heroState}."
                         });
+                    _nlog.Info(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Hero state: {heroState}.");
 
                     if (heroState == HeroStates.Idle)
                     {
@@ -125,8 +141,9 @@ namespace TheTaleWorker
                                 {
                                     Type = "Game",
                                     TurnNumber = turnNumber,
-                                    Description = $"Try to use card: {CardNames.NewWay} with uid={newWay.uid}."
+                                    Description = $"Try to use card: {newWay.name} with uid={newWay.uid}."
                                 });
+                            _nlog.Info(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Try to use card: {newWay.name} with uid={newWay.uid}.");
 
                             var result = await apiClient.UseCardsAsync(cookieWithCredentials, newWay);
                             if (result)
@@ -147,8 +164,9 @@ namespace TheTaleWorker
                                 {
                                     Type = "Game",
                                     TurnNumber = turnNumber,
-                                    Description = $"Try to use card: {CardNames.HandOfDeath} with uid={handOfDeathCard.uid}."
+                                    Description = $"Try to use card: {handOfDeathCard.name} with uid={handOfDeathCard.uid}."
                                 });
+                            _nlog.Info(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Try to use card: {handOfDeathCard.name} with uid={handOfDeathCard.uid}.");
 
                             var result = await apiClient.UseCardsAsync(cookieWithCredentials, handOfDeathCard);
                             if (result)
@@ -172,8 +190,9 @@ namespace TheTaleWorker
                                     {
                                         Type = "Game",
                                         TurnNumber = turnNumber,
-                                        Description = $"Try to use card: {CardNames.HandOfDeath} with uid={regenerationCard.uid}."
+                                        Description = $"Try to use card: {regenerationCard.name} with uid={regenerationCard.uid}."
                                     });
+                                _nlog.Info(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Try to use card: {regenerationCard.name} with uid={regenerationCard.uid}.");
 
                                 await Task.Delay(DelayAfterCardUsingInMilliSeconds);
                                 return true;
@@ -190,6 +209,7 @@ namespace TheTaleWorker
                     TurnNumber = turnNumber,
                     Description = "Task complete."
                 });
+            _nlog.Info(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Task complete.");
 
             return true;
         }
