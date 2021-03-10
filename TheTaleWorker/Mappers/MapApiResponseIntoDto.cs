@@ -1,5 +1,6 @@
 ﻿using DataBaseContext.DTO;
 using System;
+using System.Linq;
 using TheTaleApiClient.Models.Responses;
 
 namespace TheTaleWorker.Mappers
@@ -57,6 +58,21 @@ namespace TheTaleWorker.Mappers
                 result.ActionDescription = gameInfo.data.account.hero.action.description;
                 result.ActionPercents = gameInfo.data.account.hero.action.percents * 100;
                 result.ActionIsBoss = gameInfo.data.account.hero.action.is_boss ?? false;
+
+                result.Quests = gameInfo.data.account.hero.quests.quests?
+                    .SelectMany(x => x.line)
+                    .Select(x =>
+                        new Quest
+                        {
+                            type = x.type,
+                            uid = x.uid,
+                            name = x.name,
+                            action = x.action,
+                            choice = x.choice,
+                            experience = x.experience,
+                            power = x.power
+                        })
+                    .ToArray();
 
                 return result;
             }

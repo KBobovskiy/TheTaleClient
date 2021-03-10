@@ -223,7 +223,10 @@ namespace TheTaleWorker
         {
             if (heroInfoDto.ActionType == ActionTypes.Idle)
             {
-                return HeroStates.Idle;
+                if (heroInfoDto.Quests.FirstOrDefault(q=>q.type == QuestTypes.NoQuest) != null)
+                {
+                    return HeroStates.Idle;
+                }
             }
 
             if (heroInfoDto.Health < LowHealthValue)

@@ -326,16 +326,23 @@ namespace TheTaleApiClient.Models.Responses
         public string uid { get; set; }
         public string name { get; set; }
         public string action { get; set; }
-        public object choice { get; set; }
-        public List<object> choice_alternatives { get; set; }
+        public string choice { get; set; }
+
+        //public List<object> choice_alternatives { get; set; }
         public int experience { get; set; }
+
         public int power { get; set; }
-        public List<List<object>> actors { get; set; }
+        //public List<List<object>> actors { get; set; }
     }
 
     public class Quests
     {
         public List<Line> line { get; set; }
+    }
+
+    public class AllQuests
+    {
+        public List<Quests> quests { get; set; }
     }
 
     public class Hero
@@ -357,7 +364,7 @@ namespace TheTaleApiClient.Models.Responses
         public HeroBase @base { get; set; }
         public Secondary secondary { get; set; }
         public Habits habits { get; set; }
-        public Quests quests { get; set; }
+        public AllQuests quests { get; set; }
         public int sprite { get; set; }
     }
 

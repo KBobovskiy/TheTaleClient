@@ -36,5 +36,18 @@ namespace DataBaseContext.DTO
         public string Enemy { get; set; }
         public double Honor { get; set; }
         public double Peacefulness { get; set; }
+
+        public Quest[] Quests { get; set; }
+    }
+
+    public class Quest
+    {
+        public string type { get; set; }
+        public string uid { get; set; }
+        public string name { get; set; }
+        public string action { get; set; }
+        public string choice { get; set; }
+        public int experience { get; set; }
+        public int power { get; set; }
     }
 }
