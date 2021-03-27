@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheTaleApiClient", "TheTale
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataBaseContext", "DataBaseContext\DataBaseContext.csproj", "{214C2B53-2745-4275-902D-E68FE9E9FF11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resources", "Resources\Resources.csproj", "{56930C49-D297-430E-B6FC-2AA773E768F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resources", "Resources\Resources.csproj", "{56930C49-D297-430E-B6FC-2AA773E768F3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailSender", "EmailSender\EmailSender.csproj", "{D8C07F98-00E7-44E9-BF49-63187265B1CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{56930C49-D297-430E-B6FC-2AA773E768F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56930C49-D297-430E-B6FC-2AA773E768F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56930C49-D297-430E-B6FC-2AA773E768F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8C07F98-00E7-44E9-BF49-63187265B1CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8C07F98-00E7-44E9-BF49-63187265B1CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8C07F98-00E7-44E9-BF49-63187265B1CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8C07F98-00E7-44E9-BF49-63187265B1CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
