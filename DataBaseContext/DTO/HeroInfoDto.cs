@@ -38,6 +38,11 @@ namespace DataBaseContext.DTO
         public double Peacefulness { get; set; }
 
         public Quest[] Quests { get; set; }
+
+        public static int[] GetExcludedFromLogActionTypes()
+        {
+            return new int[] { (int)ActionTypes.FightingWithMob };
+        }
     }
 
     public class Quest
