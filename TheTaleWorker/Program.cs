@@ -1,4 +1,5 @@
 using DataBaseContext;
+using EmailSender;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,10 +41,19 @@ namespace TheTaleWorker
                         _logger.Error($"{nameof(WorkerConfiguration)} is NULL! Set up secrets, for more info see AddSecrets.txt");
                         throw new NullReferenceException($"{nameof(WorkerConfiguration)} is NULL!");
                     }
+                    else if (string.IsNullOrWhiteSpace(workerConfiguration.EmailLogin) || string.IsNullOrWhiteSpace(workerConfiguration.EmailPassword) || string.IsNullOrWhiteSpace(workerConfiguration.EmailFrom))
+                    {
+                        _logger.Error($"In {nameof(WorkerConfiguration)} not set up secrets for Email sender!");
+                    }
+
+                    //var workerConfigurationJson = System.Text.Json.JsonSerializer.Serialize<WorkerConfiguration>(workerConfiguration);
+                    //_logger.Info($"{nameof(WorkerConfiguration)} as JSON: {workerConfigurationJson}");
 
                     services.AddSingleton(workerConfiguration);
                     services.AddDbContext<SqliteContext>(options => options.UseSqlite(workerConfiguration.ConnectionString), ServiceLifetime.Transient, ServiceLifetime.Transient);
 
+                    var emailSender = (IEmailSender)new MailRuEmailSender(workerConfiguration.EmailLogin, workerConfiguration.EmailPassword, workerConfiguration.EmailFrom);
+                    services.AddSingleton(emailSender);
                     _logger.Info($"ConfigureServices complete");
                 });
     }
