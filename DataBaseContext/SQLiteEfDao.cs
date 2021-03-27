@@ -1,9 +1,11 @@
 ﻿using DataBaseContext.DTO;
 using DataBaseContext.Models;
+using Resources.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DataBaseContext
 {
@@ -111,6 +113,59 @@ namespace DataBaseContext
 
             _dbContext.LogEvents.Add(logEventEntry);
             await _dbContext.SaveChangesAsync();
+        }
+
+        public HeroInfoDto[] SelectLatestHeroInfosAsync(int entryNumber)
+        {
+            var heroHistory1 = _dbContext.HeroInfoHistory
+                .OrderByDescending(x => x.TurnNumber)
+                .Take(entryNumber)
+                .ToArray();
+
+            var heroInfosDto = new List<HeroInfoDto>();
+
+            foreach (var heroHistory in heroHistory1)
+            {
+                var heroInfoDto = new HeroInfoDto
+                {
+                    AccountId = heroHistory.AccountId,
+                    Date = heroHistory.Date,
+                    TurnNumber = heroHistory.TurnNumber,
+                    Name = heroHistory.Name,
+                    GenderId = heroHistory.GenderId,
+                    RaceId = heroHistory.RaceId,
+                    Health = heroHistory.Health,
+                    MaxHealth = heroHistory.MaxHealth,
+                    Level = heroHistory.Level,
+                    Money = heroHistory.Money,
+                    Alive = heroHistory.Alive,
+                    Experience = heroHistory.Experience,
+                    ExperienceToLevel = heroHistory.ExperienceToLevel,
+                    MaxBagSize = heroHistory.MaxBagSize,
+                    PowerPhysical = heroHistory.PowerPhysical,
+                    PowerMagic = heroHistory.PowerMagic,
+                    MoveSpeed = heroHistory.MoveSpeed,
+                    LootItemsCount = heroHistory.LootItemsCount,
+                    Initiative = heroHistory.Initiative,
+                    Energy = heroHistory.Energy,
+                    InPvpQueue = heroHistory.InPvpQueue,
+                    Mode = heroHistory.Mode,
+                    Enemy = heroHistory.Enemy,
+                    Honor = heroHistory.Honor,
+                    Peacefulness = heroHistory.Peacefulness,
+                    ActionType = (ActionTypes)heroHistory.ActionType,
+                    ActionDescription = heroHistory.ActionDescription,
+                    ActionPercents = heroHistory.ActionPercents,
+                    ActionIsBoss = heroHistory.ActionIsBoss,
+                };
+
+                var actionPercentsLogInfo = heroInfoDto.ActionPercents > 0 ? $"{heroInfoDto.ActionPercents:N0}%" : string.Empty;
+                heroInfoDto.ActionDescription = $"{heroInfoDto.ActionDescription} {actionPercentsLogInfo}".Trim();
+
+                heroInfosDto.Add(heroInfoDto);
+            }
+
+            return heroInfosDto.ToArray();
         }
     }
 }
