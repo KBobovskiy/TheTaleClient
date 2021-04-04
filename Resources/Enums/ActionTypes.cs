@@ -25,8 +25,13 @@ namespace Resources.Enums
         //18	герой выбирает дальнейший путь
 
         Idle = 0,
+        PerformsTask = 1,
         FightingWithMob = 3,
+        HeroInTown = 5,
         CureHimself = 6,
+        ChangeEquipment = 7,
+        Trading = 8,
         CuringHisCompanion = 15,
+        TravelToNextPoint = 17,
     }
 }

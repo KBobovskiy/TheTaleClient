@@ -41,7 +41,16 @@ namespace DataBaseContext.DTO
 
         public static int[] GetExcludedFromLogActionTypes()
         {
-            return new int[] { (int)ActionTypes.FightingWithMob };
+            return new int[]
+            {
+                (int)ActionTypes.FightingWithMob,
+                (int)ActionTypes.CureHimself,
+                (int)ActionTypes.CuringHisCompanion,
+                (int)ActionTypes.HeroInTown,
+                (int)ActionTypes.ChangeEquipment,
+                (int)ActionTypes.Trading,
+                (int)ActionTypes.TravelToNextPoint,
+            };
         }
     }
 

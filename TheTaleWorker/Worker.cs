@@ -93,6 +93,8 @@ namespace TheTaleWorker
             var lastHeroInfos = EfCoreDao.SelectLatestHeroInfosAsync(50);
             var lastHeroInfo = GetLastestHeroInfoForLoggingActionTypeChanges(lastHeroInfos);
             var lastHeroActionDescription = lastHeroInfo.ActionDescription?.Substring(0, lastHeroInfo.ActionDescription.Length / 2);
+            var lastHeroActionNumber = 10;
+            var isHeroIdle = lastHeroInfos.OrderByDescending(x => x.TurnNumber).Take(lastHeroActionNumber).Where(x => x.ActionType == ActionTypes.Idle).Count() == lastHeroActionNumber;
 
             _logger.LogInformation($"Login into the game. Last hero turn: {lastHeroInfo.TurnNumber} action: {lastHeroInfo.ActionDescription}");
             _nlog.Info(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Login into the game. Last hero turn: {lastHeroInfo.TurnNumber} action: {lastHeroInfo.ActionDescription}");
@@ -122,7 +124,7 @@ namespace TheTaleWorker
                     turnNumber = turnDto.Number;
                     var heroInfoDto = MapApiResponseIntoDto.MapGameInfoIntoHeroInfoDto(gameInfo);
                     var actionPercentsLogInfo = heroInfoDto.ActionPercents > 0 ? $"{heroInfoDto.ActionPercents:N0}%" : string.Empty;
-                    _logger.LogInformation($"Current hero turn: {heroInfoDto.TurnNumber} action: {actionPercentsLogInfo}");
+                    _logger.LogInformation($"Current hero turn: {heroInfoDto.TurnNumber} action: {heroInfoDto.ActionDescription} {actionPercentsLogInfo}");
 
                     EfCoreDao.SaveLogEventAsync(
                         new LogEventDto()
@@ -164,7 +166,7 @@ namespace TheTaleWorker
                         SendEmailWithLogEvent(logEvent);
                     }
 
-                    if (heroState == HeroStates.Idle)
+                    if (isHeroIdle && heroState == HeroStates.Idle)
                     {
                         var newWay = cards?.data?.cards?.FirstOrDefault(x => x.name == CardNames.NewWay);
                         if (newWay != null)
